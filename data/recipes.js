@@ -1,21 +1,8 @@
-import { ImageSourcePropType } from 'react-native';
-
-export type Recipe = {
-    id: string;
-    name: string;
-    image: ImageSourcePropType;
-    ingredients: string[];
-    steps: string[];
-    cuisine: string;
-    category: string;
-    difficulty: string;
-};
-
-export const recipes: Recipe[] = [
+const recipes = [
     {
         id: '1',
         name: 'Garlic Butter Chicken',
-        image: require('../assets/images/1.jpg'),
+        image: 'https://your-supabase-url/storage/v1/object/public/recipe-images/1.jpg',
         ingredients: ['chicken breast', 'garlic', 'butter', 'salt', 'pepper'],
         steps: [
             'Season the chicken.',
@@ -23,13 +10,14 @@ export const recipes: Recipe[] = [
             'Cook chicken on medium heat until golden.',
         ],
         cuisine: 'Western',
-        category: 'Meat🥩',
+        category: ['Meat🥩'],
+        flavour: ['Savoury🍽️'],
         difficulty: 'Easy',
     },
     {
         id: '2',
         name: 'Vegetable Stir Fry',
-        image: require('../assets/images/2.jpg'),
+        image: 'https://your-supabase-url/storage/v1/object/public/recipe-images/1.jpg',
         ingredients: ['broccoli', 'carrot', 'soy sauce', 'garlic', 'onion'],
         steps: [
             'Heat oil in a wok.',
@@ -37,13 +25,14 @@ export const recipes: Recipe[] = [
             'Add soy sauce and cook 2 more minutes.',
         ],
         cuisine: 'Asian',
-        category: 'Vegetarian🥗',
+        category: ['Vegetarian🥗'],
+        flavour: ['Savoury🍽️'],
         difficulty: 'Easy',
     },
     {
         id: '3',
         name: 'Spaghetti Bolognese',
-        image: require('../assets/images/3.jpeg'),
+        image: 'https://your-supabase-url/storage/v1/object/public/recipe-images/1.jpg',
         ingredients: ['spaghetti', 'ground beef', 'tomato sauce', 'onion', 'garlic', 'olive oil'],
         steps: [
             'Boil the spaghetti until al dente.',
@@ -53,13 +42,14 @@ export const recipes: Recipe[] = [
             'Serve sauce over spaghetti.',
         ],
         cuisine: 'Italian',
-        category: 'Pasta🍝',
+        category: ['Pasta🍝'],
+        flavour: ['Savoury🍽️'],
         difficulty: 'Medium',
     },
     {
         id: '4',
         name: 'Beef Stir-Fry',
-        image: require('../assets/images/4.jpg'),
+        image: 'https://your-supabase-url/storage/v1/object/public/recipe-images/1.jpg',
         ingredients: ['beef slices', 'soy sauce', 'bell pepper', 'onion', 'garlic', 'cornstarch'],
         steps: [
             'Marinate beef in soy sauce and cornstarch.',
@@ -68,13 +58,14 @@ export const recipes: Recipe[] = [
             'Add bell pepper and cook briefly.',
         ],
         cuisine: 'Chinese',
-        category: 'Meat🥩',
+        category: ['Meat🥩'],
+        flavour: ['Savoury🍽️'],
         difficulty: 'Easy',
     },
     {
         id: '5',
         name: 'Chicken Tikka Masala',
-        image: require('../assets/images/5.jpg'),
+        image: 'https://your-supabase-url/storage/v1/object/public/recipe-images/1.jpg',
         ingredients: ['chicken breast', 'yogurt', 'garam masala', 'tomato puree', 'cream'],
         steps: [
             'Marinate chicken in yogurt and spices.',
@@ -83,13 +74,14 @@ export const recipes: Recipe[] = [
             'Add chicken and cream, simmer until thick.',
         ],
         cuisine: 'Indian',
-        category: 'Meat🥩',
+        category: ['Meat🥩'],
+        flavour: ['Savoury🍽️', 'Spicy🌶️'],
         difficulty: 'Medium',
     },
     {
         id: '6',
         name: 'Vegetable Fried Rice',
-        image: require('../assets/images/6.jpg'),
+        image: 'https://your-supabase-url/storage/v1/object/public/recipe-images/1.jpg',
         ingredients: ['cooked rice', 'carrots', 'peas', 'eggs', 'soy sauce', 'green onion'],
         steps: [
             'Scramble eggs and set aside.',
@@ -98,13 +90,14 @@ export const recipes: Recipe[] = [
             'Stir in eggs and green onion.',
         ],
         cuisine: 'Asian',
-        category: 'Vegetarian🥬',
+        category: ['Vegetarian🥬'],
+        flavour: ['Savoury🍽️'],
         difficulty: 'Easy',
     },
     {
         id: '7',
         name: 'Salmon Teriyaki',
-        image: require('../assets/images/7.jpg'),
+        image: 'https://your-supabase-url/storage/v1/object/public/recipe-images/1.jpg',
         ingredients: ['salmon fillet', 'soy sauce', 'mirin', 'sugar', 'garlic'],
         steps: [
             'Mix soy sauce, mirin, sugar, and garlic to make sauce.',
@@ -113,14 +106,14 @@ export const recipes: Recipe[] = [
             'Add sauce and simmer until glazed.',
         ],
         cuisine: 'Japanese',
-        category: 'Seafood🐟',
+        category: ['Seafood🐟'],
+        flavour: ['Savoury🍽️', 'Sweet🍭'],
         difficulty: 'Easy',
     },
-
     {
         id: '8',
         name: 'Shakshuka',
-        image: require('../assets/images/8.jpg'),
+        image: 'https://your-supabase-url/storage/v1/object/public/recipe-images/1.jpg',
         ingredients: ['eggs', 'tomatoes', 'onion', 'garlic', 'bell pepper', 'paprika'],
         steps: [
             'Sauté onion, garlic, and bell pepper.',
@@ -129,13 +122,14 @@ export const recipes: Recipe[] = [
             'Cover and cook until eggs are set.',
         ],
         cuisine: 'Middle Eastern',
-        category: 'Vegetarian🥬',
+        category: ['Vegetarian🥬'],
+        flavour: ['Savoury🍽️'],
         difficulty: 'Easy',
     },
     {
         id: '9',
         name: 'Beef Tacos',
-        image: require('../assets/images/9.jpg'),
+        image: 'https://your-supabase-url/storage/v1/object/public/recipe-images/1.jpg',
         ingredients: ['taco shells', 'ground beef', 'onion', 'tomato', 'lettuce', 'cheese'],
         steps: [
             'Cook beef with onion and seasoning.',
@@ -143,13 +137,14 @@ export const recipes: Recipe[] = [
             'Fill with beef, lettuce, tomato, and cheese.',
         ],
         cuisine: 'Mexican',
-        category: 'Meat🥩',
+        category: ['Meat🥩'],
+        flavour: ['Savoury🍽️'],
         difficulty: 'Easy',
     },
     {
         id: '10',
         name: 'Pad Thai',
-        image: require('../assets/images/10.jpg'),
+        image: 'https://your-supabase-url/storage/v1/object/public/recipe-images/1.jpg',
         ingredients: ['rice noodles', 'shrimp', 'egg', 'bean sprouts', 'peanuts', 'tamarind paste'],
         steps: [
             'Soak rice noodles in warm water.',
@@ -158,8 +153,10 @@ export const recipes: Recipe[] = [
             'Mix in bean sprouts and top with peanuts.',
         ],
         cuisine: 'Thai',
-        category: 'Seafood🐟',
+        category: ['Seafood🐟'],
+        flavour: ['Savoury🍽️', 'Sweet🍭'],
         difficulty: 'Medium',
     },
-
 ];
+
+module.exports = { recipes };
