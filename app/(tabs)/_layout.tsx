@@ -49,7 +49,6 @@ const _Layout = () => {
                     borderColor: '#0f0D23'
                 }}}
         >
-            // Each option in the bottom tab navigator
             <Tabs.Screen
                 name={"index"}
                 options={{
