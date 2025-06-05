@@ -1,6 +1,5 @@
 const recipes = [
     {
-        id: '1',
         name: 'Garlic Butter Chicken',
         image: 'https://your-supabase-url/storage/v1/object/public/recipe-images/1.jpg',
         ingredients: ['chicken breast', 'garlic', 'butter', 'salt', 'pepper'],
@@ -15,7 +14,6 @@ const recipes = [
         difficulty: 'Easy',
     },
     {
-        id: '2',
         name: 'Vegetable Stir Fry',
         image: 'https://your-supabase-url/storage/v1/object/public/recipe-images/1.jpg',
         ingredients: ['broccoli', 'carrot', 'soy sauce', 'garlic', 'onion'],
@@ -30,7 +28,6 @@ const recipes = [
         difficulty: 'Easy',
     },
     {
-        id: '3',
         name: 'Spaghetti Bolognese',
         image: 'https://your-supabase-url/storage/v1/object/public/recipe-images/1.jpg',
         ingredients: ['spaghetti', 'ground beef', 'tomato sauce', 'onion', 'garlic', 'olive oil'],
@@ -47,7 +44,6 @@ const recipes = [
         difficulty: 'Medium',
     },
     {
-        id: '4',
         name: 'Beef Stir-Fry',
         image: 'https://your-supabase-url/storage/v1/object/public/recipe-images/1.jpg',
         ingredients: ['beef slices', 'soy sauce', 'bell pepper', 'onion', 'garlic', 'cornstarch'],
@@ -63,7 +59,6 @@ const recipes = [
         difficulty: 'Easy',
     },
     {
-        id: '5',
         name: 'Chicken Tikka Masala',
         image: 'https://your-supabase-url/storage/v1/object/public/recipe-images/1.jpg',
         ingredients: ['chicken breast', 'yogurt', 'garam masala', 'tomato puree', 'cream'],
@@ -79,7 +74,6 @@ const recipes = [
         difficulty: 'Medium',
     },
     {
-        id: '6',
         name: 'Vegetable Fried Rice',
         image: 'https://your-supabase-url/storage/v1/object/public/recipe-images/1.jpg',
         ingredients: ['cooked rice', 'carrots', 'peas', 'eggs', 'soy sauce', 'green onion'],
@@ -95,7 +89,6 @@ const recipes = [
         difficulty: 'Easy',
     },
     {
-        id: '7',
         name: 'Salmon Teriyaki',
         image: 'https://your-supabase-url/storage/v1/object/public/recipe-images/1.jpg',
         ingredients: ['salmon fillet', 'soy sauce', 'mirin', 'sugar', 'garlic'],
@@ -111,7 +104,6 @@ const recipes = [
         difficulty: 'Easy',
     },
     {
-        id: '8',
         name: 'Shakshuka',
         image: 'https://your-supabase-url/storage/v1/object/public/recipe-images/1.jpg',
         ingredients: ['eggs', 'tomatoes', 'onion', 'garlic', 'bell pepper', 'paprika'],
@@ -127,7 +119,6 @@ const recipes = [
         difficulty: 'Easy',
     },
     {
-        id: '9',
         name: 'Beef Tacos',
         image: 'https://your-supabase-url/storage/v1/object/public/recipe-images/1.jpg',
         ingredients: ['taco shells', 'ground beef', 'onion', 'tomato', 'lettuce', 'cheese'],
@@ -142,7 +133,6 @@ const recipes = [
         difficulty: 'Easy',
     },
     {
-        id: '10',
         name: 'Pad Thai',
         image: 'https://your-supabase-url/storage/v1/object/public/recipe-images/1.jpg',
         ingredients: ['rice noodles', 'shrimp', 'egg', 'bean sprouts', 'peanuts', 'tamarind paste'],

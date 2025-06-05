@@ -165,6 +165,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#F3F4F6',
+        paddingTop: 20,
     },
     flatList: {
         flex: 1,
@@ -177,5 +178,6 @@ const styles = StyleSheet.create({
     emptyListContainer: {
         paddingTop: 50,
         alignItems: 'center',
-    }
+    },
+
 });
