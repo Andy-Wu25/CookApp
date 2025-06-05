@@ -1,19 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { Text, FlatList, Image, TouchableOpacity, View, ScrollView, StyleSheet } from 'react-native';
-import { Link } from 'expo-router';
+import SearchBar from '@/components/SearchBar'; // Your SearchBar component
+import { TagBar } from '@/components/TagBar'; // Your TagBar component
+import { CATEGORY_TAGS_UI, CUISINE_TAGS_UI, FLAVOUR_TAGS_UI, Recipe } from '@/lib/recipe';
 import { supabase } from '@/lib/supabase';
-import { Recipe, CUISINE_TAGS_UI, CATEGORY_TAGS_UI, FLAVOUR_TAGS_UI } from '@/lib/recipe';
+import { Link } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { FlatList, Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-// --- getTagText helper (UPDATED for flags) ---
-const getTagText = (tagWithPossibleEmoji: string): string => {
-    if (!tagWithPossibleEmoji) return '';
-    // Regex to remove common emoji ranges, regional indicators (flags), AND common variation selectors
-    return tagWithPossibleEmoji.replace(/[\u{1F300}-\u{1FAD6}\u{1F600}-\u{1F64F}\u{1F1E6}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\uFE0F\uFE0E]/gu, '').trim();
-};
+// Remove emojis/flags for comparison
+const getTagText = (tagWithPossibleEmoji: string): string =>
+    tagWithPossibleEmoji?.replace(/[\u{1F300}-\u{1FAD6}\u{1F600}-\u{1F64F}\u{1F1E6}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\uFE0F\uFE0E]/gu, '').trim();
 
 export default function Index() {
     const [recipes, setRecipes] = useState<Recipe[]>([]);
     const [loading, setLoading] = useState(true);
+
+    const [query, setQuery] = useState('');
+    const [searchActive, setSearchActive] = useState(false);
 
     const [selectedCuisine, setSelectedCuisine] = useState<string | null>(null);
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -23,140 +25,170 @@ export default function Index() {
         const fetchRecipes = async () => {
             setLoading(true);
             const { data, error } = await supabase.from('recipes').select('*');
-            if (error) {
-                console.error('Fetch error:', error);
-            } else {
-                setRecipes(data || []);
-            }
+            if (error) console.error('Fetch error:', error);
+            else setRecipes(data || []);
             setLoading(false);
         };
         fetchRecipes();
     }, []);
 
     const filteredRecipes = recipes.filter((recipe) => {
-        // --- CUISINE ---
+        const matchesQuery = query.trim() === ''
+            || recipe.name?.toLowerCase().includes(query.toLowerCase())
+            || recipe.ingredients?.some((i) => i.toLowerCase().includes(query.toLowerCase()));
+
         const matchesCuisine = selectedCuisine
-            ? getTagText(selectedCuisine || '').toLowerCase() === (recipe.cuisine || '').toLowerCase()
+            ? getTagText(selectedCuisine).toLowerCase() === (recipe.cuisine || '').toLowerCase()
             : true;
 
-        // --- CATEGORY ---
-        const recipeCategoriesFromDB = (Array.isArray(recipe.category)
-                ? recipe.category.map(c => String(c || '').trim().toLowerCase())
-                : (recipe.category ? [String(recipe.category || '').trim().toLowerCase()] : [])
-        ).filter(Boolean);
+        const recipeCategories = Array.isArray(recipe.category) ? recipe.category : (recipe.category ? [recipe.category] : []);
+        const matchesCategories = selectedCategories.length === 0 || selectedCategories.every(tag =>
+            recipeCategories.map(c => getTagText(c || '').toLowerCase()).includes(getTagText(tag).toLowerCase())
+        );
 
-        const matchesCategories = selectedCategories.length > 0
-            ? selectedCategories.every(uiTagWithEmoji => {
-                const plainUiTagLowercase = getTagText(uiTagWithEmoji || '').toLowerCase();
-                return recipeCategoriesFromDB.includes(plainUiTagLowercase);
-            })
-            : true;
+        const recipeFlavours = Array.isArray(recipe.flavour) ? recipe.flavour : (recipe.flavour ? [recipe.flavour] : []);
+        const matchesFlavours = selectedFlavours.length === 0 || selectedFlavours.every(tag =>
+            recipeFlavours.map(f => getTagText(f || '').toLowerCase()).includes(getTagText(tag).toLowerCase())
+        );
 
-        // --- FLAVOUR ---
-        const recipeFlavoursFromDB = (Array.isArray(recipe.flavour)
-                ? recipe.flavour.map(f => String(f || '').trim().toLowerCase())
-                : (recipe.flavour ? [String(recipe.flavour || '').trim().toLowerCase()] : [])
-        ).filter(Boolean);
-
-        const matchesFlavours = selectedFlavours.length > 0
-            ? selectedFlavours.every(uiTagWithEmoji => {
-                const plainUiTagLowercase = getTagText(uiTagWithEmoji || '').toLowerCase();
-                return recipeFlavoursFromDB.includes(plainUiTagLowercase);
-            })
-            : true;
-
-        return matchesCuisine && matchesCategories && matchesFlavours;
+        return matchesQuery && matchesCuisine && matchesCategories && matchesFlavours;
     });
 
-    const TagBar = ({ title, tags, selected, onToggle, color, borderColor }: any) => (
-        <View className="pt-3 pb-1 px-0">
-            <Text className="text-lg font-semibold px-4 pb-2">{title}</Text>
-            <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                className="px-2"
-                contentContainerStyle={{ gap: 8, paddingVertical: 4 }}
-            >
-                {tags.map((tag: string) => {
-                    const isSelected = Array.isArray(selected) ? selected.includes(tag) : selected === tag;
-                    return (
-                        <TouchableOpacity
-                            key={tag}
-                            onPress={() => onToggle(tag)}
-                            className={`h-10 px-4 flex-row items-center justify-center rounded-full border ${
-                                isSelected
-                                    ? `${color} ${borderColor}`
-                                    : 'bg-white border-gray-300'
-                            }`}
-                        >
-                            <Text numberOfLines={1} className={`text-sm ${isSelected ? 'text-white' : 'text-gray-700'}`}>
-                                {tag}
-                            </Text>
-                        </TouchableOpacity>
-                    );
-                })}
-            </ScrollView>
-        </View>
-    );
+    const resetFilters = () => {
+        setSelectedCuisine(null);
+        setSelectedCategories([]);
+        setSelectedFlavours([]);
+        // Optionally reset query as well if desired:
+        // setQuery('');
+    };
 
-    if (loading) {
-        return <View style={styles.centered}><Text className="text-center">Loading recipes...</Text></View>;
-    }
+    const renderRecipeItem = ({ item }: { item: Recipe }) => (
+        <Link href={`/recipes/${item.id}`} asChild>
+            <TouchableOpacity
+                className="mb-4 bg-white p-4 rounded-xl shadow mx-4"
+            >
+                <Image source={{ uri: item.image_url || undefined }} className="w-full h-40 rounded-lg" resizeMode="cover" />
+                <Text className="text-xl font-semibold mt-2">{item.name || 'Unnamed Recipe'}</Text>
+                {/* CORRECTED LINE BELOW */}
+                <Text className="text-sm text-gray-500">
+                    {`${item.cuisine || 'N/A'} • ${
+                        Array.isArray(item.category)
+                            ? item.category.join(', ')
+                            : item.category || 'N/A'
+                    }`}
+                </Text>
+                <Text className="text-sm text-green-600">{item.difficulty || 'N/A Difficulty'}</Text>
+            </TouchableOpacity>
+        </Link>
+    );
 
     return (
         <View style={styles.container}>
-            <TagBar
-                title="Filter by Cuisine"
-                tags={CUISINE_TAGS_UI} // Will now display with emojis/flags
-                selected={selectedCuisine}
-                onToggle={(tag: string) => setSelectedCuisine(prev => (prev === tag ? null : tag))}
-                color="bg-blue-500"
-                borderColor="border-blue-500"
-            />
-            <TagBar
-                title="Filter by Category"
-                tags={CATEGORY_TAGS_UI}
-                selected={selectedCategories}
-                onToggle={(tag: string) => setSelectedCategories(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag])}
-                color="bg-green-500"
-                borderColor="border-green-500"
-            />
-            <TagBar
-                title="Filter by Flavour"
-                tags={FLAVOUR_TAGS_UI}
-                selected={selectedFlavours}
-                onToggle={(tag: string) => setSelectedFlavours(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag])}
-                color="bg-yellow-500"
-                borderColor="border-yellow-500"
+            <SearchBar
+                placeholder="Search recipes..."
+                value={query}
+                onChangeText={() => {}}
+                isDummy={true}
+                onPressDummy={() => setSearchActive(true)}
             />
 
-            <FlatList
-                data={filteredRecipes}
-                keyExtractor={(item) => String(item.id)}
-                contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24, paddingTop: 12 }}
-                ListEmptyComponent={
-                    <View style={styles.emptyListContainer}>
-                        <Text className="text-center text-gray-500">No recipes match the selected filters.</Text>
-                    </View>
-                }
-                renderItem={({ item }) => (
-                    <Link href={`/recipes/${item.id}`} asChild>
-                        <TouchableOpacity className="mb-4 bg-white p-4 rounded-xl shadow">
-                            <Image source={{ uri: item.image_url || undefined }} className="w-full h-40 rounded-lg" resizeMode="cover" />
-                            <Text className="text-xl font-semibold mt-2">{item.name || 'Unnamed Recipe'}</Text>
-                            <Text className="text-sm text-gray-500">
-                                {item.cuisine || 'N/A Cuisine'} • {
-                                Array.isArray(item.category)
-                                    ? (item.category.filter(Boolean).join(', ') || 'N/A Category')
-                                    : (item.category || 'N/A Category')
-                            }
+            <Modal visible={searchActive} animationType="slide" onRequestClose={() => setSearchActive(false)}>
+                <View style={styles.modalContainer}>
+                    <SearchBar
+                        value={query}
+                        onChangeText={setQuery}
+                        placeholder="Search recipes..."
+                        autoFocus
+                    />
+
+                    <FlatList
+                        data={filteredRecipes}
+                        keyExtractor={(item) => `modal-${item.id}`}
+                        contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}
+                        ListHeaderComponent={
+                            <View style={{ paddingHorizontal: 0 }}>
+                                <TagBar
+                                    title="Cuisine"
+                                    tags={CUISINE_TAGS_UI}
+                                    selected={selectedCuisine}
+                                    onToggle={(tag: string) => setSelectedCuisine(prev => prev === tag ? null : tag)}
+                                    color="bg-blue-500"
+                                    borderColor="border-blue-500"
+                                />
+                                <TagBar
+                                    title="Category"
+                                    tags={CATEGORY_TAGS_UI}
+                                    selected={selectedCategories}
+                                    onToggle={(tag: string) =>
+                                        setSelectedCategories(prev =>
+                                            prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+                                        )}
+                                    color="bg-green-500"
+                                    borderColor="border-green-500"
+                                />
+                                <TagBar
+                                    title="Flavour"
+                                    tags={FLAVOUR_TAGS_UI}
+                                    selected={selectedFlavours}
+                                    onToggle={(tag: string) =>
+                                        setSelectedFlavours(prev =>
+                                            prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+                                        )}
+                                    color="bg-yellow-500"
+                                    borderColor="border-yellow-500"
+                                />
+                                {filteredRecipes.length > 0 && (
+                                    <Text className="text-lg font-semibold my-3 px-4">
+                                        Results ({filteredRecipes.length})
+                                    </Text>
+                                )}
+                            </View>
+                        }
+                        renderItem={renderRecipeItem}
+                        ListEmptyComponent={
+                            <View style={styles.modalEmptyListContainer}>
+                                <Text className="text-center text-gray-500">
+                                    {(query.trim() === '' && !selectedCuisine && selectedCategories.length === 0 && selectedFlavours.length === 0)
+                                        ? "Type to search or apply filters."
+                                        : "No recipes found matching your criteria."
+                                    }
+                                </Text>
+                            </View>
+                        }
+                        ListFooterComponent={
+                            <View style={[styles.buttonRow, { marginTop: filteredRecipes.length > 0 ? 10 : 30 }]}>
+                                <TouchableOpacity onPress={resetFilters} style={styles.resetButton}>
+                                    <Text className="text-center text-red-600 font-semibold">Reset Filters</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={() => setSearchActive(false)} style={styles.doneButton}>
+                                    <Text className="text-center text-white font-semibold">Done</Text>
+                                </TouchableOpacity>
+                            </View>
+                        }
+                    />
+                </View>
+            </Modal>
+
+            {loading ? (
+                <Text className="text-center mt-10">Loading recipes...</Text>
+            ) : (
+                <FlatList
+                    data={query || selectedCuisine || selectedCategories.length > 0 || selectedFlavours.length > 0 ? filteredRecipes : recipes}
+                    keyExtractor={(item) => String(item.id)}
+                    contentContainerStyle={{ paddingHorizontal: 0, paddingBottom: 24, paddingTop: 12 }}
+                    ListEmptyComponent={
+                        <View style={styles.emptyListContainer}>
+                            <Text className="text-center text-gray-500">
+                                {query || selectedCuisine || selectedCategories.length > 0 || selectedFlavours.length > 0
+                                    ? "No recipes found matching your filters."
+                                    : "No recipes available."
+                                }
                             </Text>
-                            <Text className="text-sm text-green-600">{item.difficulty || 'N/A Difficulty'}</Text>
-                        </TouchableOpacity>
-                    </Link>
-                )}
-                style={styles.flatList}
-            />
+                        </View>
+                    }
+                    renderItem={renderRecipeItem}
+                />
+            )}
         </View>
     );
 }
@@ -165,19 +197,46 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#F3F4F6',
-        paddingTop: 20,
+        paddingTop: 50,
     },
-    flatList: {
+    modalContainer: {
         flex: 1,
-    },
-    centered: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
+        backgroundColor: '#fff',
+        paddingTop: 50,
     },
     emptyListContainer: {
         paddingTop: 50,
         alignItems: 'center',
     },
-
+    modalEmptyListContainer: {
+        paddingTop: 60,
+        alignItems: 'center',
+        paddingHorizontal: 16,
+    },
+    buttonRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        borderTopWidth: 1,
+        borderTopColor: '#E5E7EB',
+        backgroundColor: '#fff',
+    },
+    resetButton: {
+        paddingVertical: 12,
+        paddingHorizontal: 10,
+        borderWidth: 1,
+        borderColor: 'rgb(220 38 38)',
+        borderRadius: 8,
+        flex: 1,
+        marginRight: 8,
+    },
+    doneButton: {
+        paddingVertical: 12,
+        paddingHorizontal: 10,
+        backgroundColor: '#22C55E',
+        borderRadius: 8,
+        flex: 1,
+        marginLeft: 8,
+    },
 });
