@@ -6,7 +6,7 @@ import { icons } from '@/constants/icons';
 import { Recipe } from '@/lib/recipe';
 
 export default function RecipeDetail() {
-    const { id } = useLocalSearchParams();
+    const { id, from} = useLocalSearchParams();
     const [recipe, setRecipe] = useState<Recipe | null>(null);
 
     useEffect(() => {
@@ -31,6 +31,14 @@ export default function RecipeDetail() {
         return <Text className="text-center mt-10">Loading recipe...</Text>;
     }
 
+    const handleGoBack = () => {
+        if (from === 'search') {
+            router.back(); // This will go back into the modal state
+        } else {
+            router.push('/'); // fallback
+        }
+    };
+
     return (
         <View className="bg-white flex-1">
             <ScrollView className="p-4">
@@ -51,7 +59,7 @@ export default function RecipeDetail() {
 
             <TouchableOpacity
                 className="absolute bottom-5 left-0 right-0 mx-5 bg-accent rounded-lg py-3.5 flex flex-row items-center justify-center z-50"
-                onPress={router.back}
+                onPress={handleGoBack}
             >
                 <Image source={icons.arrow} className="size-5 mr-1 mt-0.5 rotate-180" tintColor="#fff" />
                 <Text className="text-white font-semibold text-base">Go back</Text>

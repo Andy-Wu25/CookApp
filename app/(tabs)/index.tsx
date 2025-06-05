@@ -5,12 +5,15 @@ import { supabase } from '@/lib/supabase';
 import { Link } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { FlatList, Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useRouter } from 'expo-router';
 
 // Remove emojis/flags for comparison
 const getTagText = (tagWithPossibleEmoji: string): string =>
     tagWithPossibleEmoji?.replace(/[\u{1F300}-\u{1FAD6}\u{1F600}-\u{1F64F}\u{1F1E6}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\uFE0F\uFE0E]/gu, '').trim();
 
 export default function Index() {
+    const router = useRouter();
+
     const [recipes, setRecipes] = useState<Recipe[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -63,24 +66,43 @@ export default function Index() {
     };
 
     const renderRecipeItem = ({ item }: { item: Recipe }) => (
-        <Link href={`/recipes/${item.id}`} asChild>
-            <TouchableOpacity
-                className="mb-4 bg-white p-4 rounded-xl shadow mx-4"
-            >
-                <Image source={{ uri: item.image_url || undefined }} className="w-full h-40 rounded-lg" resizeMode="cover" />
+        <TouchableOpacity
+            className="mb-4 bg-white p-4 rounded-xl shadow mx-4"
+            onPress={() => {
+                // 1. Navigate to the recipe page
+                router.push(`/recipes/${item.id}`);
+
+                // 2. Schedule the modal to close slightly after navigation starts.
+                // This ensures the new screen is already transitioning in.
+                // If searchActive is false, this does nothing, which is fine for main list clicks.
+                if (searchActive) {
+                    // Using a minimal timeout. Adjust if needed, or if it works without.
+                    // The goal is for the setSearchActive(false) to happen
+                    // after router.push has initiated the screen transition.
+                    setTimeout(() => {
+                        setSearchActive(false);
+                    }, 50); // Small delay, e.g., 50-100ms. Test what feels best.
+                    // Or even 0 might work if router.push is synchronous enough
+                    // before the next render cycle for setSearchActive.
+                }
+            }}
+        >
+        <Image
+            source={{ uri: item.image_url || undefined }}
+            className="w-full h-40 rounded-lg"
+            resizeMode="cover"
+                />
                 <Text className="text-xl font-semibold mt-2">{item.name || 'Unnamed Recipe'}</Text>
-                {/* CORRECTED LINE BELOW */}
-                <Text className="text-sm text-gray-500">
-                    {`${item.cuisine || 'N/A'} • ${
-                        Array.isArray(item.category)
-                            ? item.category.join(', ')
-                            : item.category || 'N/A'
-                    }`}
-                </Text>
-                <Text className="text-sm text-green-600">{item.difficulty || 'N/A Difficulty'}</Text>
-            </TouchableOpacity>
-        </Link>
-    );
+            <Text className="text-sm text-gray-500">
+                {`${item.cuisine || 'N/A'} • ${
+                    Array.isArray(item.category)
+                        ? item.category.join(', ')
+                        : item.category || 'N/A'
+                }`}
+            </Text>
+            <Text className="text-sm text-green-600">{item.difficulty || 'N/A Difficulty'}</Text>
+        </TouchableOpacity>
+);
 
     return (
         <View style={styles.container}>
@@ -92,7 +114,11 @@ export default function Index() {
                 onPressDummy={() => setSearchActive(true)}
             />
 
-            <Modal visible={searchActive} animationType="slide" onRequestClose={() => setSearchActive(false)}>
+            <Modal
+                visible={searchActive}
+                animationType="slide"
+                onRequestClose={() => setSearchActive(false)}
+            >
                 <View style={styles.modalContainer}>
                     <SearchBar
                         value={query}
