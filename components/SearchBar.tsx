@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TextInput, StyleSheet, Pressable, Text } from 'react-native';
+import { View, TextInput, StyleSheet, Pressable, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 interface SearchBarProps {
@@ -8,8 +8,10 @@ interface SearchBarProps {
     placeholder?: string;
     onFocus?: () => void;
     autoFocus?: boolean;
-    isDummy?: boolean; // New prop
-    onPressDummy?: () => void; // New prop
+    isDummy?: boolean;
+    onPressDummy?: () => void;
+    onClear?: () => void;
+
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
@@ -20,6 +22,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
                                                  autoFocus = false,
                                                  isDummy = false,
                                                  onPressDummy,
+                                                 onClear,
                                              }) => {
     if (isDummy) {
         return (
@@ -34,6 +37,11 @@ const SearchBar: React.FC<SearchBarProps> = ({
                 >
                     {value || placeholder}
                 </Text>
+                {onClear && (
+                    <TouchableOpacity onPress={onClear} style={styles.clearButton}>
+                        <Ionicons name="close-circle" size={20} color="#888" />
+                    </TouchableOpacity>
+                )}
             </Pressable>
         );
     }
@@ -51,6 +59,12 @@ const SearchBar: React.FC<SearchBarProps> = ({
                 autoFocus={autoFocus}
                 returnKeyType="search"
             />
+
+            {onClear && (
+                <TouchableOpacity onPress={onClear} style={styles.clearButton}>
+                    <Ionicons name="close-circle" size={20} color="#888" />
+                </TouchableOpacity>
+            )}
         </View>
     );
 };
@@ -65,6 +79,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         marginHorizontal: 16,
         marginTop: 12,
+        marginBottom: 8,
         paddingHorizontal: 12,
         height: 42,
     },
@@ -74,9 +89,13 @@ const styles = StyleSheet.create({
     input: {
         flex: 1,
         fontSize: 16,
-        color: '#333', // Color for actual text
+        color: '#333',
     },
-    placeholderText: { // Style for the placeholder text in dummy mode
-        color: '#888', // Color for placeholder
+    placeholderText: {
+        color: '#888',
+    },
+    clearButton: {
+        padding: 4,
+        marginLeft: 8,
     },
 });

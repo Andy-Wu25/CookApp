@@ -53,15 +53,6 @@ export default function Index() {
 
     return (
         <View style={styles.container}>
-            <SearchBar
-                placeholder="Search recipes..."
-                value={queryForMainList} // Could be used for initial query on search screen
-                // onChangeText={setQueryForMainList} // If you want live filtering on index before navigating
-                isDummy={true} // Still acts as a trigger
-                onPressDummy={() => router.push({ pathname: '/search', params: { initialQuery: queryForMainList } })}
-            />
-
-            {/* No Modal here anymore */}
 
             {loading ? (
                 <Text className="text-center mt-10">Loading recipes...</Text>

@@ -22,7 +22,11 @@ export default function SearchScreen() {
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
     const [selectedFlavours, setSelectedFlavours] = useState<string[]>([]);
 
-    // Fetch all recipes once when the screen mounts
+    const [cuisineStates, setCuisineStates] = useState<Record<string, TagState>>({});
+    const [categoryStates, setCategoryStates] = useState<Record<string, TagState>>({});
+    const [flavourStates, setFlavourStates] = useState<Record<string, TagState>>({});
+
+    // Fetch all recipes
     useEffect(() => {
         const fetchAllRecipes = async () => {
             setLoading(true);
@@ -34,32 +38,63 @@ export default function SearchScreen() {
         fetchAllRecipes();
     }, []);
 
+    const cycleTagState = (current: TagState): TagState =>
+        current === 'include' ? 'exclude' : current === 'exclude' ? null : 'include';
+
+    const toggleTag = (
+        tag: string,
+        stateUpdater: React.Dispatch<React.SetStateAction<Record<string, TagState>>>
+    ) => {
+        stateUpdater((prev) => ({
+            ...prev,
+            [tag]: cycleTagState(prev[tag] || null),
+        }));
+    };
+
+    const matchesMultiStateTags = (recipeTags: string[], tagStates: Record<string, TagState>) => {
+        const includes = Object.keys(tagStates).filter((k) => tagStates[k] === 'include');
+        const excludes = Object.keys(tagStates).filter((k) => tagStates[k] === 'exclude');
+        const normalizedTags = recipeTags.map((t) => getTagText(t || '').toLowerCase());
+
+        const includeMatch = includes.length === 0 || includes.every(tag =>
+            normalizedTags.includes(getTagText(tag).toLowerCase())
+        );
+        const excludeMatch = excludes.every(tag =>
+            !normalizedTags.includes(getTagText(tag).toLowerCase())
+        );
+
+        return includeMatch && excludeMatch;
+    };
+
     const filteredRecipes = allRecipes.filter((recipe) => {
         const matchesQuery = query.trim() === ''
             || recipe.name?.toLowerCase().includes(query.toLowerCase())
             || recipe.ingredients?.some((i) => i.toLowerCase().includes(query.toLowerCase()));
 
-        const matchesCuisine = selectedCuisine
-            ? getTagText(selectedCuisine).toLowerCase() === (recipe.cuisine || '').toLowerCase()
-            : true;
-
-        const recipeCategories = Array.isArray(recipe.category) ? recipe.category : (recipe.category ? [recipe.category] : []);
-        const matchesCategories = selectedCategories.length === 0 || selectedCategories.every(tag =>
-            recipeCategories.map(c => getTagText(c || '').toLowerCase()).includes(getTagText(tag).toLowerCase())
+        const matchesCuisine = matchesMultiStateTags(
+            recipe.cuisine ? [recipe.cuisine] : [],
+            cuisineStates
         );
 
-        const recipeFlavours = Array.isArray(recipe.flavour) ? recipe.flavour : (recipe.flavour ? [recipe.flavour] : []);
-        const matchesFlavours = selectedFlavours.length === 0 || selectedFlavours.every(tag =>
-            recipeFlavours.map(f => getTagText(f || '').toLowerCase()).includes(getTagText(tag).toLowerCase())
+        const matchesCategories = matchesMultiStateTags(
+            Array.isArray(recipe.category) ? recipe.category : recipe.category ? [recipe.category] : [],
+            categoryStates
         );
+
+        const matchesFlavours = matchesMultiStateTags(
+            Array.isArray(recipe.flavour) ? recipe.flavour : recipe.flavour ? [recipe.flavour] : [],
+            flavourStates
+        );
+
         return matchesQuery && matchesCuisine && matchesCategories && matchesFlavours;
     });
 
+
     const resetFilters = () => {
-        setSelectedCuisine(null);
-        setSelectedCategories([]);
-        setSelectedFlavours([]);
-        // setQuery(''); // Optionally reset query too
+        setSelectedCuisine({});
+        setSelectedCategories({});
+        setSelectedFlavours({});
+         setQuery('');
     };
 
     const renderRecipeItem = ({ item }: { item: Recipe }) => (
@@ -90,7 +125,7 @@ export default function SearchScreen() {
                 value={query}
                 onChangeText={setQuery}
                 placeholder="Search recipes..."
-                autoFocus // Good for a search screen
+                autoFocus
             />
             <FlatList
                 data={filteredRecipes}
@@ -101,32 +136,20 @@ export default function SearchScreen() {
                         <TagBar
                             title="Cuisine"
                             tags={CUISINE_TAGS_UI}
-                            selected={selectedCuisine}
-                            onToggle={(tag: string) => setSelectedCuisine(prev => prev === tag ? null : tag)}
-                            color="bg-blue-500"
-                            borderColor="border-blue-500"
+                            selected={cuisineStates}
+                            onToggle={(tag) => toggleTag(tag, setCuisineStates)}
                         />
                         <TagBar
                             title="Category"
                             tags={CATEGORY_TAGS_UI}
-                            selected={selectedCategories}
-                            onToggle={(tag: string) =>
-                                setSelectedCategories(prev =>
-                                    prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
-                                )}
-                            color="bg-green-500"
-                            borderColor="border-green-500"
+                            selected={categoryStates}
+                            onToggle={(tag) => toggleTag(tag, setCategoryStates)}
                         />
                         <TagBar
                             title="Flavour"
                             tags={FLAVOUR_TAGS_UI}
-                            selected={selectedFlavours}
-                            onToggle={(tag: string) =>
-                                setSelectedFlavours(prev =>
-                                    prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
-                                )}
-                            color="bg-yellow-500"
-                            borderColor="border-yellow-500"
+                            selected={flavourStates}
+                            onToggle={(tag) => toggleTag(tag, setFlavourStates)}
                         />
                         {filteredRecipes.length > 0 && (
                             <Text className="text-lg font-semibold my-3 px-4">
@@ -147,15 +170,6 @@ export default function SearchScreen() {
                         </Text>
                     </View>
                 }
-                // No "Done" button needed, user navigates back using header back button
-                // "Reset Filters" can still be useful
-                ListFooterComponent={
-                    <View style={styles.buttonRowModal}>
-                        <TouchableOpacity onPress={resetFilters} style={styles.resetButtonModal}>
-                            <Text className="text-center text-red-600 font-semibold">Reset Filters</Text>
-                        </TouchableOpacity>
-                    </View>
-                }
             />
         </View>
     );
@@ -164,24 +178,23 @@ export default function SearchScreen() {
 const styles = StyleSheet.create({
     screenContainer: {
         flex: 1,
-        backgroundColor: '#fff', // Or your preferred background
-        paddingTop: 0, // Header will provide padding if shown
+        backgroundColor: '#fff',
+        paddingTop: 0,
     },
-    emptyListContainerModal: { // Renamed to avoid conflict if styles are merged
+    emptyListContainerModal: {
         paddingTop: 60,
         alignItems: 'center',
         paddingHorizontal: 16,
     },
-    buttonRowModal: { // Renamed
+    buttonRowModal: {
         paddingHorizontal: 16,
         paddingVertical: 20,
-        justifyContent: 'center', // Center the reset button if it's the only one
+        justifyContent: 'center',
     },
-    resetButtonModal: { // Renamed
+    resetButtonModal: {
         padding: 10,
         borderWidth: 1,
         borderColor: 'rgb(220 38 38)',
         borderRadius: 8,
-        // flex: 1, // Not needed if it's the only button
     },
 });

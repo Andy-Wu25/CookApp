@@ -1,89 +1,45 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 
-type TagBarProps = {
+type TagState = 'include' | 'exclude' | null;
+
+interface TagBarProps {
     title: string;
     tags: string[];
-    selected: string | string[] | null;
+    selected: Record<string, TagState>;
     onToggle: (tag: string) => void;
-    color?: string;
-    borderColor?: string;
-};
+}
 
-export const TagBar = ({
-                           title,
-                           tags,
-                           selected,
-                           onToggle,
-                           color = 'bg-gray-200',
-                           borderColor = 'border-gray-400',
-                       }: TagBarProps) => {
-    const isSelected = (tag: string) => {
-        if (Array.isArray(selected)) return selected.includes(tag);
-        return selected === tag;
-    };
-
+export const TagBar: React.FC<TagBarProps> = ({ title, tags, selected, onToggle }) => {
     return (
-        <View style={styles.row}>
-            <Text style={styles.title}>{title}:</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tagsContainer}>
+        <View style={{ paddingHorizontal: 16, marginTop: 12 }}>
+            <Text className="text-base font-semibold mb-2">{title}</Text>
+            <View className="flex-row flex-wrap gap-2">
                 {tags.map((tag) => {
-                    const selectedStyle = isSelected(tag)
-                        ? [styles.tagSelected, { borderColor: '#4ADE80', backgroundColor: '#DCFCE7' }]
-                        : [styles.tag];
+                    const state = selected[tag];
+                    let bgColor = 'bg-gray-200';
+                    let textColor = 'text-gray-700';
+                    if (state === 'include') {
+                        bgColor = 'bg-green-500';
+                        textColor = 'text-white';
+                    } else if (state === 'exclude') {
+                        bgColor = 'bg-red-500';
+                        textColor = 'text-white';
+                    }
+
                     return (
-                        <TouchableOpacity key={tag} onPress={() => onToggle(tag)} style={selectedStyle}>
-                            <Text style={isSelected(tag) ? styles.tagTextSelected : styles.tagText}>{tag}</Text>
+                        <TouchableOpacity
+                            key={tag}
+                            onPress={() => onToggle(tag)}
+                            className={`px-3 py-1 rounded-full ${bgColor}`}
+                        >
+                            <Text className={`text-sm font-medium ${textColor}`}>{tag}</Text>
                         </TouchableOpacity>
                     );
                 })}
-            </ScrollView>
+            </View>
         </View>
     );
 };
 
-const styles = StyleSheet.create({
-    row: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginVertical: 8,
-        paddingHorizontal: 16,
-    },
-    title: {
-        fontWeight: 'bold',
-        fontSize: 16,
-        marginRight: 8,
-        minWidth: 75,
-    },
-    tagsContainer: {
-        flexDirection: 'row',
-        gap: 8,
-    },
-    tag: {
-        borderWidth: 1,
-        borderColor: '#D1D5DB',
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 16,
-        marginRight: 8,
-        backgroundColor: '#F3F4F6',
-    },
-    tagSelected: {
-        borderWidth: 1,
-        borderColor: '#4ADE80',
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 16,
-        marginRight: 8,
-        backgroundColor: '#DCFCE7',
-    },
-    tagText: {
-        fontSize: 14,
-        color: '#374151',
-    },
-    tagTextSelected: {
-        fontSize: 14,
-        color: '#065F46',
-        fontWeight: 'bold',
-    },
-});
+
