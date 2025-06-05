@@ -11,9 +11,9 @@ const getTagText = (tagWithPossibleEmoji: string): string =>
 
 export default function SearchScreen() {
     const router = useRouter();
-    const params = useLocalSearchParams(); // To potentially receive initial query/filters
+    const params = useLocalSearchParams();
 
-    const [allRecipes, setAllRecipes] = useState<Recipe[]>([]); // Store all recipes fetched once
+    const [allRecipes, setAllRecipes] = useState<Recipe[]>([]);
     const [loading, setLoading] = useState(true);
 
     // Filters and Query for this screen
@@ -91,10 +91,10 @@ export default function SearchScreen() {
 
 
     const resetFilters = () => {
-        setSelectedCuisine({});
-        setSelectedCategories({});
-        setSelectedFlavours({});
-         setQuery('');
+        setCuisineStates({});
+        setCategoryStates({});
+        setFlavourStates({});
+        setQuery('');
     };
 
     const renderRecipeItem = ({ item }: { item: Recipe }) => (
@@ -121,12 +121,20 @@ export default function SearchScreen() {
     return (
         <View style={styles.screenContainer}>
             <Stack.Screen options={{ title: 'Search & Filter', headerShown: true }} />
-            <SearchBar
-                value={query}
-                onChangeText={setQuery}
-                placeholder="Search recipes..."
-                autoFocus
-            />
+            <View style={styles.searchRow}>
+                <View style={{ flex: 1 }}>
+                    <SearchBar
+                        value={query}
+                        onChangeText={setQuery}
+                        placeholder="Search recipes..."
+                        autoFocus
+                    />
+                </View>
+
+                <TouchableOpacity onPress={resetFilters} style={styles.clearButton}>
+                    <Text style={styles.clearButtonText}>✕</Text>
+                </TouchableOpacity>
+            </View>
             <FlatList
                 data={filteredRecipes}
                 keyExtractor={(item) => `search-recipe-${item.id}`}
@@ -170,6 +178,7 @@ export default function SearchScreen() {
                         </Text>
                     </View>
                 }
+
             />
         </View>
     );
@@ -196,5 +205,25 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: 'rgb(220 38 38)',
         borderRadius: 8,
+    },
+    searchRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        marginTop: 12,
+    },
+
+    clearButton: {
+        marginLeft: 8,
+        padding: 8,
+        borderRadius: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+
+    clearButtonText: {
+        fontSize: 25,
+        color: '#ab4c4c', // red-600
+        fontWeight: '900', // maximum weight
     },
 });
