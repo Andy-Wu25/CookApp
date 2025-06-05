@@ -33,9 +33,9 @@ export default function RecipeDetail() {
 
     const handleGoBack = () => {
         if (from === 'search') {
-            router.back(); // This will go back into the modal state
+            router.back();
         } else {
-            router.push('/'); // fallback
+            router.push('/');
         }
     };
 

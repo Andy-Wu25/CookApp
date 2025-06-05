@@ -1,35 +1,89 @@
-import {ScrollView, Text, TouchableOpacity, View} from "react-native";
-import React from "react";
+import React from 'react';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 
-export const TagBar = ({ title, tags, selected, onToggle, color, borderColor }: any) => (
-    <View className="pt-3 pb-1 px-0">
-        <Text className="text-lg font-semibold px-4 pb-2">{title}</Text>
-        <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            className="px-2"
-            contentContainerStyle={{ gap: 8, paddingVertical: 4 }}
-        >
-            {tags.map((tag: string) => {
-                const isSelected = Array.isArray(selected) ? selected.includes(tag) : selected === tag;
-                return (
-                    <TouchableOpacity
-                        key={tag}
-                        onPress={() => onToggle(tag)}
-                        className={`h-10 px-4 flex-row items-center justify-center rounded-full border ${
-                            isSelected
-                                ? `${color} ${borderColor}`
-                                : 'bg-white border-gray-300'
-                        }`}
-                    >
-                        <Text numberOfLines={1} className={`text-sm ${isSelected ? 'text-white' : 'text-gray-700'}`}>
-                            {tag}
-                        </Text>
-                    </TouchableOpacity>
-                );
-            })}
-        </ScrollView>
-    </View>
-);
+type TagBarProps = {
+    title: string;
+    tags: string[];
+    selected: string | string[] | null;
+    onToggle: (tag: string) => void;
+    color?: string;
+    borderColor?: string;
+};
 
-export default TagBar
+export const TagBar = ({
+                           title,
+                           tags,
+                           selected,
+                           onToggle,
+                           color = 'bg-gray-200',
+                           borderColor = 'border-gray-400',
+                       }: TagBarProps) => {
+    const isSelected = (tag: string) => {
+        if (Array.isArray(selected)) return selected.includes(tag);
+        return selected === tag;
+    };
+
+    return (
+        <View style={styles.row}>
+            <Text style={styles.title}>{title}:</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tagsContainer}>
+                {tags.map((tag) => {
+                    const selectedStyle = isSelected(tag)
+                        ? [styles.tagSelected, { borderColor: '#4ADE80', backgroundColor: '#DCFCE7' }]
+                        : [styles.tag];
+                    return (
+                        <TouchableOpacity key={tag} onPress={() => onToggle(tag)} style={selectedStyle}>
+                            <Text style={isSelected(tag) ? styles.tagTextSelected : styles.tagText}>{tag}</Text>
+                        </TouchableOpacity>
+                    );
+                })}
+            </ScrollView>
+        </View>
+    );
+};
+
+const styles = StyleSheet.create({
+    row: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginVertical: 8,
+        paddingHorizontal: 16,
+    },
+    title: {
+        fontWeight: 'bold',
+        fontSize: 16,
+        marginRight: 8,
+        minWidth: 75,
+    },
+    tagsContainer: {
+        flexDirection: 'row',
+        gap: 8,
+    },
+    tag: {
+        borderWidth: 1,
+        borderColor: '#D1D5DB',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 16,
+        marginRight: 8,
+        backgroundColor: '#F3F4F6',
+    },
+    tagSelected: {
+        borderWidth: 1,
+        borderColor: '#4ADE80',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 16,
+        marginRight: 8,
+        backgroundColor: '#DCFCE7',
+    },
+    tagText: {
+        fontSize: 14,
+        color: '#374151',
+    },
+    tagTextSelected: {
+        fontSize: 14,
+        color: '#065F46',
+        fontWeight: 'bold',
+    },
+});
