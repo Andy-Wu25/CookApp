@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { Recipe, CUISINE_TAGS_UI, CATEGORY_TAGS_UI, FLAVOUR_TAGS_UI } from '@/lib/recipe';
 import SearchBar from '@/components/SearchBar';
 import { TagBar } from '@/components/TagBar';
+import { TagState, cycleTagState } from '@/components/TagState';
 
 const getTagText = (tagWithPossibleEmoji: string): string =>
     tagWithPossibleEmoji?.replace(/[\u{1F300}-\u{1FAD6}\u{1F600}-\u{1F64F}\u{1F1E6}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\uFE0F\uFE0E]/gu, '').trim();
@@ -38,8 +39,6 @@ export default function SearchScreen() {
         fetchAllRecipes();
     }, []);
 
-    const cycleTagState = (current: TagState): TagState =>
-        current === 'include' ? 'exclude' : current === 'exclude' ? null : 'include';
 
     const toggleTag = (
         tag: string,
