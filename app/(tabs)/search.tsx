@@ -119,7 +119,8 @@ export default function SearchScreen() {
 
     return (
         <View style={styles.screenContainer}>
-            <Stack.Screen options={{ title: 'Search & Filter', headerShown: true }} />
+            { /* Header for the search screen */}
+            <Stack.Screen options={{ title: 'Search', headerShown: true }} />
             <View style={styles.searchRow}>
                 <View style={{ flex: 1 }}>
                     <SearchBar
@@ -171,7 +172,7 @@ export default function SearchScreen() {
                         <Text className="text-center text-gray-500">
                             {loading ? "Loading..." : (
                                 (query.trim() === '' && !selectedCuisine && selectedCategories.length === 0 && selectedFlavours.length === 0)
-                                    ? "Type to search or apply filters."
+                                    ? "No recipes found matching your criteria."
                                     : "No recipes found matching your criteria."
                             )}
                         </Text>
@@ -190,7 +191,7 @@ const styles = StyleSheet.create({
         paddingTop: 0,
     },
     emptyListContainerModal: {
-        paddingTop: 60,
+        paddingTop: 50,
         alignItems: 'center',
         paddingHorizontal: 16,
     },
